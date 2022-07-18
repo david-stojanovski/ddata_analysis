@@ -6,6 +6,7 @@ import pandas as pd
 import pyvista as pv
 import vtkmodules.all as vtk
 from natsort import natsorted
+import time
 
 
 def extract_closest_point_region(polydata, point=(0, 0, 0)):
@@ -221,33 +222,38 @@ def get_bloodpool_volume(in_path, selected_labels, label_tag='elemTag',
     return calculated_volumes
 
 
-if __name__ == "__main__":
-    '''
-    Labels for chambers in https://zenodo.org/record/4506930#.YtFzPNLMJ1M
-    01. LV myocardium (endo + epi)
-    02. RV myocardium (endo + epi)
-    03. LA myocardium (endo + epi)
-    04. RA myocardium (endo + epi)
-    '''
+# if __name__ == "__main__":
+'''
+Labels for chambers in https://zenodo.org/record/4506930#.YtFzPNLMJ1M
+01. LV myocardium (endo + epi)
+02. RV myocardium (endo + epi)
+03. LA myocardium (endo + epi)
+04. RA myocardium (endo + epi)
+'''
 
-    data_path = r'/home/ds17/Documents/final_data_binary/'
-    labels = [1, 2, 3, 4]
-    show_chamber_volumes = False
-    refine_mesh = False
-    chamber_volume_save_path = os.path.join(os.getcwd(), 'chamber_volumes.csv')
+data_path = r'/home/ds17/Documents/final_data_binary/'
+labels = [1]
+show_chamber_volumes = False
+refine_mesh = False
+chamber_volume_save_path = os.path.join(os.getcwd(), 'chamber_volumes.csv')
 
 
-    all_volumes = []
-    paths = natsorted(glob.glob(data_path + '*.vtk'))
-    for path in paths:
-        all_case_volumes = get_bloodpool_volume(path,
-                                                selected_labels=labels,
-                                                label_tag='elemTag',
-                                                plot_chamber_volumes=show_chamber_volumes)
-        all_volumes.append(all_case_volumes)
-        print(path)
+all_volumes = []
+paths = natsorted(glob.glob(data_path + '*.vtk'))
+start = time.time()
+for path in paths:
 
-    chamber_volume_df = save_volumes2excel(save_path=chamber_volume_save_path,
-                                           volume_data=all_volumes,
-                                           calculated_labels=labels,
-                                           case_paths=paths)
+    all_case_volumes = get_bloodpool_volume(path,
+                                            selected_labels=labels,
+                                            label_tag='elemTag',
+                                            plot_chamber_volumes=show_chamber_volumes)
+    all_volumes.append(all_case_volumes)
+
+    print(path)
+end = time.time()
+print(end - start)
+
+chamber_volume_df = save_volumes2excel(save_path=chamber_volume_save_path,
+                                       volume_data=all_volumes,
+                                       calculated_labels=labels,
+                                       case_paths=paths)
